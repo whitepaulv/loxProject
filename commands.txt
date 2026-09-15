@@ -1,0 +1,4 @@
+This is here entirely for me to keep track of commands I need to run for cargo.
+I have never done Rust before so it is a neccesity.
+
+cargo test -- --show-output => allows me to see output of tests where I put print statements

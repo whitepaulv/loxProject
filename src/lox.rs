@@ -1,10 +1,12 @@
 mod tokenType;
 mod token;
 mod scanner;
+mod expression;
+mod astPrinter;
 
 use scanner::Scanner;
 use std::env;
-use std::io;
+use std::io::{self, Write}; // Write allows .flush() to be used
 
 
 fn main() {
@@ -40,7 +42,7 @@ fn run_prompt() {
         io::stdout().flush().unwrap();
 
         let mut line = String::new();
-        let mut n = stdin.read_line(line).expect("Could not read line");
+        let n = stdin.read_line(&mut line).expect("Could not read line");
         if n == 0 { // n is used to count how many bytes were read. If n == 0, line is empty* and we can return
             break;
         }
@@ -50,7 +52,7 @@ fn run_prompt() {
     }
 }
 
-fn run(source: &String, had_error: &mut bool) {
+fn run(source: &str, had_error: &mut bool) { // USE &str INSTEAD OF &string WHEREVER POSSIBLE!! not sure why but man it makes life easier. 
     let scanner = Scanner::new(source.to_string());
     let tokens = scanner.scan_tokens(had_error);
     for token in tokens {

@@ -8,7 +8,7 @@ pub enum Literal {
 #[derive(Debug)]
 pub struct Token {
     token_type: TokenType, // Cannot call this 'type' like in book because it is a protected keyword
-    lexeme: String,
+    pub lexeme: String,
     literal: Option<Literal>,
     line: usize,
 }
@@ -23,7 +23,7 @@ impl Token {
         }
     }
     
-    fn to_string(&self) -> String {
+    pub fn to_string(&self) -> String {
         format!("{:?} {} {:?}", self.token_type, self.lexeme, self.literal)
     }
 }
