@@ -14,7 +14,7 @@ fn main() {
     let args: Vec<String> = env::args().collect();
 
     if args.len() > 2 {
-        panic!("Error: needs arguments");
+        panic!("Error: too many arguments were provided");
     } else if args.len() == 2 {
         run_file(&args[1]);
     } else {
@@ -31,7 +31,7 @@ fn run_file(path: &String) {
     run(&source, &mut had_error);
 
     if had_error {
-        panic!("There was an error");
+        std::process::exit(65);
     }
 }
 
@@ -66,6 +66,6 @@ fn error(had_error: &mut bool, line: usize, message: &str) {
 }
 
 fn report(had_error: &mut bool, line: usize, location: &str, message: &str) {
-    println!("[line {line}] Error{location}: {message}");
-    *had_error = true;
+    println!("[line {line}] Error{location}: {message}"); // Might want to change to eprintln! in the future? 
+    *had_error = true;                                    // Not sure how the intended functionality is
 }

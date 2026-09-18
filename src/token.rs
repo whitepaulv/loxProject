@@ -2,7 +2,7 @@ use crate::tokenType::TokenType;
 
 #[derive(Debug)]
 pub enum Literal {
-    Number(usize),
+    Number(f64),
     String(String),
 }
 #[derive(Debug)]

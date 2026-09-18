@@ -163,7 +163,7 @@ impl Scanner {
         }
 
         let text = self.source[self.start..self.current].to_string(); // Rust doesn't have the same 'source.substring() that Java does,
-        let value: usize = text.parse().expect("Invalid number literal");  // so this implementation is used instead of that in addToken.
+        let value: f64 = text.parse().expect("Invalid number literal");  // so this implementation is used instead of that in addToken.
 
         self.add_token_with_literal(TokenType::NUMBER, Some(Literal::Number(value)));
     }
@@ -176,7 +176,7 @@ impl Scanner {
             self.advance();
         }
 
-        if(!(self.is_at_end())) {
+        if(self.is_at_end()) {
             error(had_error, self.line, "Undetermined string");
             return;
         }
@@ -222,7 +222,7 @@ impl Scanner {
     }
 
     fn is_alpha_numeric(&self, c: &char) -> bool {
-        self.is_digit(&c) || self.is_alpha(&c)
+        self.is_digit(c) || self.is_alpha(c)
     } 
 
     fn advance(& mut self) -> char {

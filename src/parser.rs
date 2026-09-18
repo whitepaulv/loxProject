@@ -24,7 +24,9 @@ impl Parser {
         let mut expr: Expr;
         expr = comparison();
 
-        while (self.match_token_types(TokenType::BANG_EQUAL, TokenType::EQUAL_EQUAL))
+        while (self.match_token_types(TokenType::BANG_EQUAL, TokenType::EQUAL_EQUAL)) {
+            let operator = 
+        }
     }
 
     fn match_token_types(&mut self, types: TokenType) -> bool { // Need to change to an array!
