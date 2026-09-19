@@ -1,16 +1,17 @@
 use crate::tokenType::TokenType;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)] 
 pub enum Literal {
     Number(f64),
     String(String),
+    Bool(bool),
 }
-#[derive(Debug)]
-pub struct Token {
-    token_type: TokenType, // Cannot call this 'type' like in book because it is a protected keyword
+#[derive(Debug, Clone)]
+pub struct Token { //  I'm making all these public. I don't know it it's needed but my life is easier bc of it.
+    pub token_type: TokenType, // Cannot call this 'type' like in book because it is a protected keyword
     pub lexeme: String,
-    literal: Option<Literal>,
-    line: usize,
+    pub literal: Option<Literal>,
+    pub line: usize,
 }
 
 impl Token {

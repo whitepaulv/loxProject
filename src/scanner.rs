@@ -1,4 +1,3 @@
-use std::default;
 use std::collections::HashMap;
 
 use crate::token::{Literal, Token};
@@ -237,5 +236,243 @@ impl Scanner {
     fn add_token_with_literal(&mut self, token_type: TokenType, literal: Option<Literal>) { // Serves the purpose of addToken in the book
         let text = self.source[self.start..self.current].to_string();
         self.tokens.push(Token::new(token_type, text, literal, self.line));
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::Scanner;
+    use crate::token::Token;
+
+    fn scan(source: &str) -> (Vec<Token>, bool) {
+        let mut had_error = false;
+        let tokens = Scanner::new(source.to_string()).scan_tokens(&mut had_error);
+        (tokens, had_error)
+    }
+
+    fn ty(token: &Token) -> String {
+        token.to_string().split_whitespace().next().unwrap().to_string()
+    }
+
+    fn lex(token: &Token) -> &str {
+        &token.lexeme
+    }
+
+    fn types(tokens: &[Token]) -> Vec<String> {
+        tokens.iter().map(ty).collect()
+    }
+
+    fn last_type(tokens: &[Token]) -> String {
+        ty(tokens.last().unwrap())
+    }
+
+    #[test]
+    fn single_char_punctuation() {
+        let (tokens, err) = scan("(){}.,;-+*");
+        assert!(!err);
+        assert_eq!(
+            types(&tokens),
+            vec![
+                "LEFT_PAREN", "RIGHT_PAREN", "LEFT_BRACE", "RIGHT_BRACE", "DOT", "COMMA",
+                "SEMICOLON", "MINUS", "PLUS", "STAR", "EOF",
+            ]
+        );
+    }
+
+    #[test]
+    fn two_char_operators() {
+        let (tokens, err) = scan("!= == <= >=");
+        assert!(!err);
+        assert_eq!(
+            types(&tokens),
+            vec![
+                "BANG_EQUAL",
+                "EQUAL_EQUAL",
+                "LESS_EQUAL",
+                "GREATER_EQUAL",
+                "EOF",
+            ]
+        );
+        assert_eq!(lex(&tokens[0]), "!=");
+        assert_eq!(lex(&tokens[1]), "==");
+    }
+
+    #[test]
+    fn single_vs_double_char_operators() {
+        let (tokens, err) = scan("! = < >");
+        assert!(!err);
+        assert_eq!(
+            types(&tokens),
+            vec!["BANG", "EQUAL", "LESS", "GREATER", "EOF"]
+        );
+    }
+
+    #[test]
+    fn slash_vs_comment() {
+        let (tokens, err) = scan("/ // not a comment\n/");
+        assert!(!err);
+        assert_eq!(types(&tokens), vec!["SLASH", "SLASH", "EOF"]);
+    }
+
+    #[test]
+    fn comment_to_end_of_line() {
+        let (tokens, err) = scan("// hello world\n(");
+        assert!(!err);
+        assert_eq!(types(&tokens), vec!["LEFT_PAREN", "EOF"]);
+    }
+
+    #[test]
+    fn whitespace_is_ignored() {
+        let (tokens, err) = scan("  \t\r (  )  ");
+        assert!(!err);
+        assert_eq!(types(&tokens), vec!["LEFT_PAREN", "RIGHT_PAREN", "EOF"]);
+    }
+
+    #[test]
+    fn newlines_are_ignored_as_tokens() {
+        let (tokens, err) = scan("(\n)\n");
+        assert!(!err);
+        assert_eq!(types(&tokens), vec!["LEFT_PAREN", "RIGHT_PAREN", "EOF"]);
+    }
+
+    #[test]
+    fn integer_number() {
+        let (tokens, err) = scan("123");
+        assert!(!err);
+        assert_eq!(types(&tokens), vec!["NUMBER", "EOF"]);
+        assert_eq!(lex(&tokens[0]), "123");
+        assert!(tokens[0].to_string().contains("Number(123"));
+    }
+
+    #[test]
+    fn decimal_number() {
+        let (tokens, err) = scan("45.67");
+        assert!(!err);
+        assert_eq!(types(&tokens), vec!["NUMBER", "EOF"]);
+        assert_eq!(lex(&tokens[0]), "45.67");
+        assert!(tokens[0].to_string().contains("Number(45.67)"));
+    }
+
+    #[test]
+    fn number_then_dot_not_decimal() {
+        let (tokens, err) = scan("123.");
+        assert!(!err);
+        assert_eq!(types(&tokens), vec!["NUMBER", "DOT", "EOF"]);
+        assert_eq!(lex(&tokens[0]), "123");
+    }
+
+    #[test]
+    fn string_literal() {
+        let (tokens, err) = scan("\"hello world\"");
+        assert!(!err);
+        assert_eq!(types(&tokens), vec!["STRING", "EOF"]);
+        assert_eq!(lex(&tokens[0]), "\"hello world\"");
+        assert!(tokens[0].to_string().contains("String(\"hello world\")"));
+    }
+
+    #[test]
+    fn multiline_string() {
+        let (tokens, err) = scan("\"line1\nline2\"");
+        assert!(!err);
+        assert_eq!(types(&tokens), vec!["STRING", "EOF"]);
+    }
+
+    #[test]
+    fn empty_string() {
+        let (tokens, err) = scan("\"\"");
+        assert!(!err);
+        assert_eq!(types(&tokens), vec!["STRING", "EOF"]);
+        assert_eq!(lex(&tokens[0]), "\"\"");
+    }
+
+    #[test]
+    fn identifier() {
+        let (tokens, err) = scan("foo_bar baz");
+        assert!(!err);
+        assert_eq!(types(&tokens), vec!["IDENTIFIER", "IDENTIFIER", "EOF"]);
+        assert_eq!(lex(&tokens[0]), "foo_bar");
+        assert_eq!(lex(&tokens[1]), "baz");
+    }
+
+    #[test]
+    fn keyword_or_vs_identifier_orchid() {
+        let (tokens, err) = scan("or orchid");
+        assert!(!err);
+        assert_eq!(types(&tokens), vec!["OR", "IDENTIFIER", "EOF"]);
+        assert_eq!(lex(&tokens[0]), "or");
+        assert_eq!(lex(&tokens[1]), "orchid");
+    }
+
+    #[test]
+    fn all_keywords() {
+        let src = "and class else false for fun if nil or print return super this true var while";
+        let (tokens, err) = scan(src);
+        assert!(!err);
+        assert_eq!(
+            types(&tokens),
+            vec![
+                "AND", "CLASS", "ELSE", "FALSE", "FOR", "FUN", "IF", "NIL", "OR", "PRINT",
+                "RETURN", "SUPER", "THIS", "TRUE", "VAR", "WHILE", "EOF",
+            ]
+        );
+    }
+
+    #[test]
+    fn unexpected_character_sets_error_flag() {
+        let (tokens, err) = scan("@");
+        assert!(err);
+        assert_eq!(last_type(&tokens), "EOF");
+    }
+
+    #[test]
+    fn keeps_scanning_after_error() {
+        let (tokens, err) = scan("@ (");
+        assert!(err);
+        assert_eq!(types(&tokens), vec!["LEFT_PAREN", "EOF"]);
+    }
+
+    #[test]
+    fn unterminated_string_sets_error_flag() {
+        let (tokens, err) = scan("\"unterminated");
+        assert!(err);
+        assert_eq!(last_type(&tokens), "EOF");
+    }
+
+    #[test]
+    fn book_style_sample() {
+        let src = r#"
+                        // grouping
+                        (( )){}
+                        !*+-/=<> <= ==
+                        "lox"
+                        1234 12.34
+                        var language
+                        "#;
+        let (tokens, err) = scan(src);
+        assert!(!err);
+
+        let t = types(&tokens);
+        assert!(t.contains(&"LEFT_PAREN".to_string()));
+        assert!(t.contains(&"STRING".to_string()));
+        assert!(t.contains(&"NUMBER".to_string()));
+        assert!(t.contains(&"VAR".to_string()));
+        assert!(t.contains(&"IDENTIFIER".to_string()));
+        assert_eq!(last_type(&tokens), "EOF");
+    }
+
+    #[test]
+    fn eof_always_last() {
+        let (tokens, _) = scan("()");
+        assert_eq!(last_type(&tokens), "EOF");
+        assert_eq!(lex(tokens.last().unwrap()), "");
+    }
+
+    #[test]
+    fn empty_source_only_eof() {
+        let (tokens, err) = scan("");
+        assert!(!err);
+        assert_eq!(tokens.len(), 1);
+        assert_eq!(last_type(&tokens), "EOF");
     }
 }

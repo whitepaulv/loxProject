@@ -15,6 +15,7 @@ fn ast_printer(expr: &Expr) -> String {
                 None => "nil".to_string(),
                 Some(Literal::Number(n)) => n.to_string(),
                 Some(Literal::String(s)) => s.clone(),
+                Some(Literal::Bool(b)) => b.to_string(),
             }
         }
         Expr::Unary { prefix, expression } => {
@@ -62,30 +63,57 @@ mod tests {
     #[test]
     fn prints_number_literal() {
         let expr = Expr::Literal {
-            value_type: Some(Literal::Number(123)),
+            value_type: Some(Literal::Number(123.0)),
         };
         assert_eq!(ast_printer(&expr), "123");
     }
 
     #[test]
-    fn prints_book_example_tree() { // Direct stealing of book test
+    fn prints_string_literal() {
+        let expr = Expr::Literal {
+            value_type: Some(Literal::String("lox".to_string())),
+        };
+        assert_eq!(ast_printer(&expr), "lox");
+    }
+
+    #[test]
+    fn prints_unary() {
+        let expr = Expr::Unary {
+            prefix: minus_token(),
+            expression: Box::new(Expr::Literal {
+                value_type: Some(Literal::Number(123.0)),
+            }),
+        };
+        assert_eq!(ast_printer(&expr), "(- 123)");
+    }
+
+    #[test]
+    fn prints_grouping() {
+        let expr = Expr::Grouping {
+            expression: Box::new(Expr::Literal {
+                value_type: Some(Literal::Number(45.0)),
+            }),
+        };
+        assert_eq!(ast_printer(&expr), "(group 45)");
+    }
+
+    #[test]
+    fn prints_book_example_tree() {
         let expr = Expr::Binary {
             left: Box::new(Expr::Unary {
                 prefix: minus_token(),
                 expression: Box::new(Expr::Literal {
-                    value_type: Some(Literal::Number(123)),
+                    value_type: Some(Literal::Number(123.0)),
                 }),
             }),
             operator: star_token(),
             right: Box::new(Expr::Grouping {
                 expression: Box::new(Expr::Literal {
-                    value_type: Some(Literal::Number(45)),
+                    value_type: Some(Literal::Number(45.0)),
                 }),
             }),
         };
 
-        let mut temp_val = ast_printer(&expr); // This whole setup is so I can see what is printed
-        print!("Tree is:\n{}", temp_val);
-        assert_eq!(temp_val, "(* (- 123) (group 45))");
+        assert_eq!(ast_printer(&expr), "(* (- 123) (group 45))");
     }
 }
