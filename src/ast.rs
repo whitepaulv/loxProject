@@ -1,7 +1,7 @@
 use crate::expression::Expr;
 use crate::token::Literal; // Needed ot convert Literal to its different enum types
 
-fn ast_printer(expr: &Expr) -> String {
+pub fn ast_printer(expr: &Expr) -> String {
     // 
     match expr { // instead of 4 different visit... methods, I can use a match{} in rust
         Expr::Binary { left, operator, right } => {
@@ -44,14 +44,14 @@ mod tests {
     use super::ast_printer;
     use crate::expression::Expr;
     use crate::token::{Literal, Token};
-    use crate::tokenType::TokenType;
+    use crate::token_type::TokenType;
 
     fn minus_token() -> Token {
-        Token::new(TokenType::MINUS, "-".to_string(), None, 1)
+        Token::new(TokenType::Minus, "-".to_string(), None, 1)
     }
 
     fn star_token() -> Token {
-        Token::new(TokenType::STAR, "*".to_string(), None, 1)
+        Token::new(TokenType::Star, "*".to_string(), None, 1)
     }
 
     #[test]

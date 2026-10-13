@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::token::{Literal, Token};
-use crate::tokenType::TokenType;
+use crate::token_type::TokenType;
 use crate::error; // crate is the branch to use, not lox. Check cargo.toml for why
 
 pub struct Scanner {
@@ -28,22 +28,22 @@ impl Scanner {
     fn init_keywords() -> HashMap<String, TokenType> {
         let mut keywords = HashMap::new();
 
-        keywords.insert("and".to_string(), TokenType::AND);
-        keywords.insert("class".to_string(), TokenType::CLASS);
-        keywords.insert("else".to_string(), TokenType::ELSE);
-        keywords.insert("false".to_string(), TokenType::FALSE);
-        keywords.insert("for".to_string(), TokenType::FOR);
-        keywords.insert("fun".to_string(), TokenType::FUN);
-        keywords.insert("if".to_string(), TokenType::IF);
-        keywords.insert("nil".to_string(), TokenType::NIL);
-        keywords.insert("or".to_string(), TokenType::OR);
-        keywords.insert("print".to_string(), TokenType::PRINT);
-        keywords.insert("return".to_string(), TokenType::RETURN);
-        keywords.insert("super".to_string(), TokenType::SUPER);
-        keywords.insert("this".to_string(), TokenType::THIS);
-        keywords.insert("true".to_string(), TokenType::TRUE);
-        keywords.insert("var".to_string(), TokenType::VAR);
-        keywords.insert("while".to_string(), TokenType::WHILE);
+        keywords.insert("and".to_string(), TokenType::And);
+        keywords.insert("class".to_string(), TokenType::Class);
+        keywords.insert("else".to_string(), TokenType::Else);
+        keywords.insert("false".to_string(), TokenType::False);
+        keywords.insert("for".to_string(), TokenType::For);
+        keywords.insert("fun".to_string(), TokenType::Fun);
+        keywords.insert("if".to_string(), TokenType::If);
+        keywords.insert("nil".to_string(), TokenType::Nil);
+        keywords.insert("or".to_string(), TokenType::Or);
+        keywords.insert("print".to_string(), TokenType::Print);
+        keywords.insert("return".to_string(), TokenType::Return);
+        keywords.insert("super".to_string(), TokenType::Super);
+        keywords.insert("this".to_string(), TokenType::This);
+        keywords.insert("true".to_string(), TokenType::True);
+        keywords.insert("var".to_string(), TokenType::Var);
+        keywords.insert("while".to_string(), TokenType::While);
         keywords
     }
 
@@ -58,7 +58,7 @@ impl Scanner {
         }
 
         self.tokens.push(Token::new(
-            TokenType::EOF,
+            TokenType::Eof,
             String::new(),
             None, // I can pass in 'None' here because its type is Option<Literal>
             self.line,
@@ -70,45 +70,45 @@ impl Scanner {
     fn scan_token(&mut self, had_error: &mut bool) {
         let c = self.advance();
         match c {
-            '(' => self.add_token(TokenType::LEFT_PAREN),
-            ')' => self.add_token(TokenType::RIGHT_PAREN),
-            '{' => self.add_token(TokenType::LEFT_BRACE),
-            '}' => self.add_token(TokenType::RIGHT_BRACE),
-            ',' => self.add_token(TokenType::COMMA),
-            '.' => self.add_token(TokenType::DOT),
-            '-' => self.add_token(TokenType::MINUS),
-            '+' => self.add_token(TokenType::PLUS),
-            ';' => self.add_token(TokenType::SEMICOLON),
-            '*' => self.add_token(TokenType::STAR),
+            '(' => self.add_token(TokenType::LeftParen),
+            ')' => self.add_token(TokenType::RightParen),
+            '{' => self.add_token(TokenType::LeftBrace),
+            '}' => self.add_token(TokenType::RightBrace),
+            ',' => self.add_token(TokenType::Comma),
+            '.' => self.add_token(TokenType::Dot),
+            '-' => self.add_token(TokenType::Minus),
+            '+' => self.add_token(TokenType::Plus),
+            ';' => self.add_token(TokenType::Semicolon),
+            '*' => self.add_token(TokenType::Star),
             '!' => {
                 let token_type = if self.match_char('=') {
-                    TokenType::BANG_EQUAL
+                    TokenType::BangEqual
                 } else {
-                    TokenType::BANG
+                    TokenType::Bang
                 };
                 self.add_token(token_type);
             }
             '=' => {
                 let token_type = if self.match_char('=') {
-                    TokenType::EQUAL_EQUAL
+                    TokenType::EqualEqual
                 } else {
-                    TokenType::EQUAL
+                    TokenType::Equal
                 };
                 self.add_token(token_type);
             }
             '<' => {
                 let token_type = if self.match_char('=') {
-                    TokenType::LESS_EQUAL
+                    TokenType::LessEqual
                 } else {
-                    TokenType::LESS
+                    TokenType::Less
                 };
                 self.add_token(token_type);
             }
             '>' => {
                 let token_type = if self.match_char('=') {
-                    TokenType::GREATER_EQUAL
+                    TokenType::GreaterEqual
                 } else {
-                    TokenType::GREATER
+                    TokenType::Greater
                 };
                 self.add_token(token_type);
             }
@@ -119,7 +119,7 @@ impl Scanner {
                         self.advance();
                     }
                 } else {
-                    self.add_token(TokenType::SLASH);
+                    self.add_token(TokenType::Slash);
                 }
             }
             ' ' | '\r' | '\t' => {} // These are the 'do nothing' chars
@@ -139,24 +139,24 @@ impl Scanner {
     }
 
     fn identifier(&mut self) {
-        while(self.is_alpha_numeric(&(self.peek()))) {
+        while self.is_alpha_numeric(&(self.peek())) {
             self.advance();
         }
 
         let text = self.source[self.start..self.current].to_string();
-        let token_type = self.keywords.get(&text).copied().unwrap_or(TokenType::IDENTIFIER);
+        let token_type = self.keywords.get(&text).copied().unwrap_or(TokenType::Identifier);
         self.add_token(token_type);
     }
 
     fn number(&mut self) {
-        while(self.is_digit(&self.peek())) {
+        while self.is_digit(&self.peek()) {
             self.advance();
         }
 
         if self.peek() == '.' && self.is_digit(&(self.peek_next())) {
             self.advance();
 
-            while(self.is_digit(&self.peek())) {
+            while self.is_digit(&self.peek()) {
                 self.advance();
             }
         }
@@ -164,18 +164,18 @@ impl Scanner {
         let text = self.source[self.start..self.current].to_string(); // Rust doesn't have the same 'source.substring() that Java does,
         let value: f64 = text.parse().expect("Invalid number literal");  // so this implementation is used instead of that in addToken.
 
-        self.add_token_with_literal(TokenType::NUMBER, Some(Literal::Number(value)));
+        self.add_token_with_literal(TokenType::Number, Some(Literal::Number(value)));
     }
 
     fn string(&mut self, had_error: &mut bool) {
-        while (self.peek() != '"' && !(self.is_at_end())) {
+        while self.peek() != '"' && !(self.is_at_end()) {
             if self.peek() == '\n' {
                 self.line += 1;
             }
             self.advance();
         }
 
-        if(self.is_at_end()) {
+        if self.is_at_end() {
             error(had_error, self.line, "Undetermined string");
             return;
         }
@@ -183,7 +183,7 @@ impl Scanner {
         self.advance();
 
         let value = self.source[self.start + 1..self.current - 1].to_string();
-        self.add_token_with_literal(TokenType::STRING, Some(Literal::String(value))); // Have to change how addToken is called from the book, just like I changed the function/method
+        self.add_token_with_literal(TokenType::String, Some(Literal::String(value))); // Have to change how addToken is called from the book, just like I changed the function/method
     }
 
     fn match_char(&mut self, expected: char) -> bool {
@@ -206,7 +206,7 @@ impl Scanner {
     }
 
     fn peek_next(&self) -> char {
-        if (self.current + 1 >= self.source.len()) {
+        if self.current + 1 >= self.source.len() {
             return '\0';
         }
         self.source.as_bytes()[self.current + 1] as char // Have to do the weird Rust ".as_bytes() ... to char" thing again
@@ -238,7 +238,6 @@ impl Scanner {
         self.tokens.push(Token::new(token_type, text, literal, self.line));
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -274,8 +273,8 @@ mod tests {
         assert_eq!(
             types(&tokens),
             vec![
-                "LEFT_PAREN", "RIGHT_PAREN", "LEFT_BRACE", "RIGHT_BRACE", "DOT", "COMMA",
-                "SEMICOLON", "MINUS", "PLUS", "STAR", "EOF",
+                "LeftParen", "RightParen", "LeftBrace", "RightBrace", "Dot", "Comma",
+                "Semicolon", "Minus", "Plus", "Star", "Eof",
             ]
         );
     }
@@ -287,11 +286,11 @@ mod tests {
         assert_eq!(
             types(&tokens),
             vec![
-                "BANG_EQUAL",
-                "EQUAL_EQUAL",
-                "LESS_EQUAL",
-                "GREATER_EQUAL",
-                "EOF",
+                "BangEqual",
+                "EqualEqual",
+                "LessEqual",
+                "GreaterEqual",
+                "Eof",
             ]
         );
         assert_eq!(lex(&tokens[0]), "!=");
@@ -304,7 +303,7 @@ mod tests {
         assert!(!err);
         assert_eq!(
             types(&tokens),
-            vec!["BANG", "EQUAL", "LESS", "GREATER", "EOF"]
+            vec!["Bang", "Equal", "Less", "Greater", "Eof"]
         );
     }
 
@@ -312,35 +311,35 @@ mod tests {
     fn slash_vs_comment() {
         let (tokens, err) = scan("/ // not a comment\n/");
         assert!(!err);
-        assert_eq!(types(&tokens), vec!["SLASH", "SLASH", "EOF"]);
+        assert_eq!(types(&tokens), vec!["Slash", "Slash", "Eof"]);
     }
 
     #[test]
     fn comment_to_end_of_line() {
         let (tokens, err) = scan("// hello world\n(");
         assert!(!err);
-        assert_eq!(types(&tokens), vec!["LEFT_PAREN", "EOF"]);
+        assert_eq!(types(&tokens), vec!["LeftParen", "Eof"]);
     }
 
     #[test]
     fn whitespace_is_ignored() {
         let (tokens, err) = scan("  \t\r (  )  ");
         assert!(!err);
-        assert_eq!(types(&tokens), vec!["LEFT_PAREN", "RIGHT_PAREN", "EOF"]);
+        assert_eq!(types(&tokens), vec!["LeftParen", "RightParen", "Eof"]);
     }
 
     #[test]
     fn newlines_are_ignored_as_tokens() {
         let (tokens, err) = scan("(\n)\n");
         assert!(!err);
-        assert_eq!(types(&tokens), vec!["LEFT_PAREN", "RIGHT_PAREN", "EOF"]);
+        assert_eq!(types(&tokens), vec!["LeftParen", "RightParen", "Eof"]);
     }
 
     #[test]
     fn integer_number() {
         let (tokens, err) = scan("123");
         assert!(!err);
-        assert_eq!(types(&tokens), vec!["NUMBER", "EOF"]);
+        assert_eq!(types(&tokens), vec!["Number", "Eof"]);
         assert_eq!(lex(&tokens[0]), "123");
         assert!(tokens[0].to_string().contains("Number(123"));
     }
@@ -349,7 +348,7 @@ mod tests {
     fn decimal_number() {
         let (tokens, err) = scan("45.67");
         assert!(!err);
-        assert_eq!(types(&tokens), vec!["NUMBER", "EOF"]);
+        assert_eq!(types(&tokens), vec!["Number", "Eof"]);
         assert_eq!(lex(&tokens[0]), "45.67");
         assert!(tokens[0].to_string().contains("Number(45.67)"));
     }
@@ -358,7 +357,7 @@ mod tests {
     fn number_then_dot_not_decimal() {
         let (tokens, err) = scan("123.");
         assert!(!err);
-        assert_eq!(types(&tokens), vec!["NUMBER", "DOT", "EOF"]);
+        assert_eq!(types(&tokens), vec!["Number", "Dot", "Eof"]);
         assert_eq!(lex(&tokens[0]), "123");
     }
 
@@ -366,7 +365,7 @@ mod tests {
     fn string_literal() {
         let (tokens, err) = scan("\"hello world\"");
         assert!(!err);
-        assert_eq!(types(&tokens), vec!["STRING", "EOF"]);
+        assert_eq!(types(&tokens), vec!["String", "Eof"]);
         assert_eq!(lex(&tokens[0]), "\"hello world\"");
         assert!(tokens[0].to_string().contains("String(\"hello world\")"));
     }
@@ -375,14 +374,14 @@ mod tests {
     fn multiline_string() {
         let (tokens, err) = scan("\"line1\nline2\"");
         assert!(!err);
-        assert_eq!(types(&tokens), vec!["STRING", "EOF"]);
+        assert_eq!(types(&tokens), vec!["String", "Eof"]);
     }
 
     #[test]
     fn empty_string() {
         let (tokens, err) = scan("\"\"");
         assert!(!err);
-        assert_eq!(types(&tokens), vec!["STRING", "EOF"]);
+        assert_eq!(types(&tokens), vec!["String", "Eof"]);
         assert_eq!(lex(&tokens[0]), "\"\"");
     }
 
@@ -390,7 +389,7 @@ mod tests {
     fn identifier() {
         let (tokens, err) = scan("foo_bar baz");
         assert!(!err);
-        assert_eq!(types(&tokens), vec!["IDENTIFIER", "IDENTIFIER", "EOF"]);
+        assert_eq!(types(&tokens), vec!["Identifier", "Identifier", "Eof"]);
         assert_eq!(lex(&tokens[0]), "foo_bar");
         assert_eq!(lex(&tokens[1]), "baz");
     }
@@ -399,7 +398,7 @@ mod tests {
     fn keyword_or_vs_identifier_orchid() {
         let (tokens, err) = scan("or orchid");
         assert!(!err);
-        assert_eq!(types(&tokens), vec!["OR", "IDENTIFIER", "EOF"]);
+        assert_eq!(types(&tokens), vec!["Or", "Identifier", "Eof"]);
         assert_eq!(lex(&tokens[0]), "or");
         assert_eq!(lex(&tokens[1]), "orchid");
     }
@@ -412,8 +411,8 @@ mod tests {
         assert_eq!(
             types(&tokens),
             vec![
-                "AND", "CLASS", "ELSE", "FALSE", "FOR", "FUN", "IF", "NIL", "OR", "PRINT",
-                "RETURN", "SUPER", "THIS", "TRUE", "VAR", "WHILE", "EOF",
+                "And", "Class", "Else", "False", "For", "Fun", "If", "Nil", "Or", "Print",
+                "Return", "Super", "This", "True", "Var", "While", "Eof",
             ]
         );
     }
@@ -422,21 +421,21 @@ mod tests {
     fn unexpected_character_sets_error_flag() {
         let (tokens, err) = scan("@");
         assert!(err);
-        assert_eq!(last_type(&tokens), "EOF");
+        assert_eq!(last_type(&tokens), "Eof");
     }
 
     #[test]
     fn keeps_scanning_after_error() {
         let (tokens, err) = scan("@ (");
         assert!(err);
-        assert_eq!(types(&tokens), vec!["LEFT_PAREN", "EOF"]);
+        assert_eq!(types(&tokens), vec!["LeftParen", "Eof"]);
     }
 
     #[test]
     fn unterminated_string_sets_error_flag() {
         let (tokens, err) = scan("\"unterminated");
         assert!(err);
-        assert_eq!(last_type(&tokens), "EOF");
+        assert_eq!(last_type(&tokens), "Eof");
     }
 
     #[test]
@@ -453,18 +452,18 @@ mod tests {
         assert!(!err);
 
         let t = types(&tokens);
-        assert!(t.contains(&"LEFT_PAREN".to_string()));
-        assert!(t.contains(&"STRING".to_string()));
-        assert!(t.contains(&"NUMBER".to_string()));
-        assert!(t.contains(&"VAR".to_string()));
-        assert!(t.contains(&"IDENTIFIER".to_string()));
-        assert_eq!(last_type(&tokens), "EOF");
+        assert!(t.contains(&"LeftParen".to_string()));
+        assert!(t.contains(&"String".to_string()));
+        assert!(t.contains(&"Number".to_string()));
+        assert!(t.contains(&"Var".to_string()));
+        assert!(t.contains(&"Identifier".to_string()));
+        assert_eq!(last_type(&tokens), "Eof");
     }
 
     #[test]
     fn eof_always_last() {
         let (tokens, _) = scan("()");
-        assert_eq!(last_type(&tokens), "EOF");
+        assert_eq!(last_type(&tokens), "Eof");
         assert_eq!(lex(tokens.last().unwrap()), "");
     }
 
@@ -473,6 +472,6 @@ mod tests {
         let (tokens, err) = scan("");
         assert!(!err);
         assert_eq!(tokens.len(), 1);
-        assert_eq!(last_type(&tokens), "EOF");
+        assert_eq!(last_type(&tokens), "Eof");
     }
 }

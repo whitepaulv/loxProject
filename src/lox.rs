@@ -1,13 +1,15 @@
-mod tokenType;
+mod token_type;
 mod token;
 mod scanner;
 mod expression;
-mod astPrinter;
+mod ast;
 mod parser;
 
 use scanner::Scanner;
+use ast::ast_printer;
 use std::env;
 use std::io::{self, Write}; // Write allows .flush() to be used
+use parser::Parser;
 
 
 fn main() {
@@ -56,9 +58,13 @@ fn run_prompt() {
 fn run(source: &str, had_error: &mut bool) { // USE &str INSTEAD OF &string WHEREVER POSSIBLE!! not sure why but man it makes life easier. 
     let scanner = Scanner::new(source.to_string());
     let tokens = scanner.scan_tokens(had_error);
-    for token in tokens {
-        println!("{}", token.to_string());
-    }
+
+    let mut parser = Parser::new(tokens);
+    let expr = parser.parse(had_error);
+    if !*had_error {
+    println!("{}", ast_printer(&expr));
+    // FIXME: need to finish later
+}
 }
 
 fn error(had_error: &mut bool, line: usize, message: &str) {
@@ -67,5 +73,5 @@ fn error(had_error: &mut bool, line: usize, message: &str) {
 
 fn report(had_error: &mut bool, line: usize, location: &str, message: &str) {
     println!("[line {line}] Error{location}: {message}"); // Might want to change to eprintln! in the future? 
-    *had_error = true;                                    // Not sure how the intended functionality is
+    *had_error = true;                                    // Not sure how the intended functionality is of the Lox book
 }
